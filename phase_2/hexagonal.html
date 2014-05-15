@@ -1,0 +1,303 @@
+
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <style>
+
+.hexagon {
+  stroke: #000;
+  stroke-width: .5px;
+}
+
+.active {
+   background: steelblue;
+    
+}
+
+.menu {
+    fill: red;
+}
+.exit {   
+  fill: lightsteelblue;   
+  stroke-width: 1px;      
+  stroke: lightsteelblue;           
+}
+
+
+
+div.tooltip {   
+  position: absolute;           
+  text-align: center;           
+  width: 200px;                  
+  height: 30px;                 
+  padding: 2px;             
+  font: 12px sans-serif;        
+  background: lightsteelblue;   
+  border: 0px;      
+  border-radius: 8px;           
+  cursor: url(../img/honeybee_opt.png), auto;
+  pointer-events: none;         
+}
+
+            a {
+                cursor: url(../img/honeybee_opt.png), auto;
+            }
+
+</style>
+
+    <body>
+        <div id="vis"></div>
+        <script src="../d3js/d3.v3.min.js"></script>
+        <script src="../d3js/d3.hexbin.v0.min.js"></script>
+
+        <script>
+           var width = 900, height = 648; 
+            
+    svg = d3.select("#vis").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("class", "bee");
+    
+   var  num = 80;
+
+
+            var bees = d3.range(num).map(function(i) {
+                return [Math.round((width - 20)*Math.random()), Math.round((height-20)*Math.random()), parseInt(Math.random()*180)];
+        }); 
+
+        pipeData = [0]
+
+        var pipe = svg.selectAll(".pipe")
+                .data(pipeData)
+                .enter()
+              .append("g")
+                .append("image")
+                .attr("xlink:href", "../img/pipe.png")
+                .attr("transform", "translate(" + (width - 128) + "," + (height - 128)/2 + ")")
+                .attr("width", "128")
+                .attr("height", "128")
+                .on("click", function() { blowSmoke(0);});
+        
+    
+        var beeImages = svg.selectAll(".bee")
+            .data(bees)
+            .enter()
+            .append("g")
+            .append("image")
+                .attr("class","bee")
+                .attr("xlink:href", "../img/bumble_bee.png")
+                .attr("transform", function (d) {
+                        return "translate("+ d[0]+ "," +d[1]+ ") rotate("+ d[2] +  ")";
+                })
+                .attr("width", "32")
+                .attr("height", "32");
+
+        d3.timer(step);
+        
+        
+        function step() {
+            for (var i = 0; i < bees.length; i++) {
+                bees[i][0] += 5 * Math.round(2*Math.random()-1);
+                bees[i][1] += 5 * Math.round(2*Math.random()-1);
+                if (bees[i][0] < 0) { bees[i][0] = 0 };
+                if (bees[i][0] > width) { bees[i][0] = width };
+                if (bees[i][1] < 0) { bees[i][1] = 0 };
+                if (bees[i][1] > height) { bees[i][1] = height };
+            }
+        
+            var images = svg.selectAll(".bee")
+                .transition()
+                .attr("transform", function(d,i){
+                        return "translate("+ bees[i][0]+ "," + bees[i][1]+ ") rotate("+ bees[i][2] +  ")";
+                })
+                .duration(1000)
+                .ease("elastic");
+                
+        }
+
+        var smokePath = [[-width/4,-height/4], [-width/2,-height/2], [-width*3/4,-height/4],[-(width-40),0],[-width*3/4,height/4],[-width/2,(height/2 - 40)], [-width/4,height/4]];
+
+
+        svg.selectAll(".smoke")
+            .data([0])
+            .enter()
+            .append("g")
+                .attr("class", "smoke")
+                .append("circle")
+                    .attr("cx", width - 104)
+                    .attr("cy", height/2 + 10)
+                    .attr("r", 10)
+                    .style("fill", "steelblue");
+
+        
+        var circles = svg.selectAll("circle");
+
+        function blowSmoke(i) {
+            if (i < smokePath.length) {
+                circles.transition()
+                    .duration(1000)
+                    .attr("transform", "translate("+ smokePath[i][0] + "," + smokePath[i][1] + ")")
+                    .attr("r", (10 + i * 10))
+                    .each("end",function() { // as seen above
+                            blowSmoke(i+1);
+                           // .each("end" construct here.
+                    });
+            } else {
+                circles.transition()
+                    .attr("r", width)
+                    .duration(2000)
+                    .ease("linear")
+                    .each("end",function() {showHex();});
+                
+                
+            }
+        
+        }
+
+
+
+var menu = [
+    {'text':'about','link':'about.html', 'image':'../img/menu1.png', 'x':'200', 'y':'140' },
+    {'text':'Introduction & méthodologie', 'image':'../img/menu2.png','link':'about.html','x':'290', 'y':'270'},
+    {'text':'De quelle science parle-t-on?', 'image':'../img/menu3.png','link':'about.html','x':'360', 'y':'120'},
+    {'text':'Abeille sauvage et abeille domestique', 'image':'../img/menu4.png','link':'about.html','x':'460', 'y':'260'}
+];
+
+
+
+
+
+
+var div = d3.select("body").append("div")   
+    .attr("class", "tooltip")               
+    .style("opacity", 0);
+
+
+function showHex() {
+
+    
+hexData = [0]
+
+        var hex = svg.selectAll(".hex")
+                .data(hexData)
+                .enter()
+              .append("g")
+                .append("image")
+                .attr("class", "honeycomb")    
+                .style("opacity",0)
+                .attr("xlink:href", "../img/honeycomb2.png")
+                .attr("width", width)
+                .attr("height", height);
+        
+            
+
+
+var menuitems = svg.selectAll('.menu')
+        .data(menu)
+        .enter()
+        .append("g")
+        .attr("title", function(d) {
+                return d.text;
+        })
+        .on("mouseover", mouseover)
+        .on("mouseout", mouseout)
+        .on("click", clicked)
+        .append("a")
+        .attr("xlink:href", function(d){return d.link;})
+                .append("image")
+                .attr("class", "honeycomb")    
+                .style("opacity",0)
+                .attr("x", function(d){ return d.x})
+                .attr("y", function(d){ return d.y})
+                .attr("xlink:href", function(d) { return d.image})
+                .attr("width", 170)
+                .attr("height", 170); 
+
+var textlabels = menuitems
+        .append("text")
+        .attr("x", -10)
+        .attr("y", -10)
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "8px")
+        .attr("fill", "red")
+        .attr("text-anchor", "middle")
+        .text(function(d){ return d.text});
+
+
+        svg.selectAll(".honeycomb")
+                .transition()
+                .duration(1000)
+                .style("opacity",1)
+
+svg.selectAll('.door')
+    .data([0])
+    .enter()
+    .append("a")
+    .attr("xlink:href","flowers2.html")
+    .append('rect')
+    .attr("x", width-60)
+    .attr("y", height-80)
+    .attr("width", 40)
+    .attr("height", 60)
+    .attr("stroke","red")
+    .attr("fill","brown")
+    .attr("stroke-width","4px" )
+    
+}
+
+
+function mouseover(d) {
+            div.transition()        
+                .duration(200)      
+                .style("opacity", .9);      
+            div .html(d3.select(this).attr('title'))  
+                .style("left", (d3.event.pageX) + "px")     
+                .style("top", (d3.event.pageY - 28) + "px");    
+}
+
+function mouseout(d) {
+            div.transition()        
+                .duration(500)      
+                .style("opacity", 0);   
+}
+
+function clicked(d) {
+  var x, y, k;
+  if (d && centered !== d) {
+    x = d.x;
+    y = d.y;
+    k = 4;
+    centered = d;
+  } else {
+    x = width / 2;
+    y = height / 2;
+    k = 1;
+    centered = null;
+  }
+
+  svg.selectAll("g")
+      .classed("active", centered && function(d) { return d === centered; });
+
+  svg.transition()
+      .duration(750)
+      .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
+      .style("stroke-width", 1.5 / k + "px");
+
+    
+    div.transition()        
+       .duration(500)      
+       .style("opacity", 0);   
+
+}
+
+        </script>
+        
+    </body>
+</html>
