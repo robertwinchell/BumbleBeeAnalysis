@@ -1,0 +1,185 @@
+
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Controvers: le declin des abeilles</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" type="text/css" href="../css/bootstrap-3.0.0.min.css">
+    <style>
+
+        .hexagon {
+            stroke-width: 1px;
+            stroke: darkorange;    
+        }
+
+        .active {
+            stroke-width: 5px;
+            stroke: red;
+        }
+
+        .menu {
+            fill: red;
+        }
+        .exit {   
+            fill: lightsteelblue;   
+            stroke-width: 1px;      
+            stroke: lightsteelblue;           
+        }
+
+        .menulabel {
+            font-size: 20px; 
+            line-height: 20px;
+            color: white;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        h1,h2,h3,h4 {
+            font-family: "Edwardian Script ITC";
+        }
+        
+
+        a {
+            cursor: url('../img/honeybee_opt.png'), pointer;
+        }
+
+    </style>
+
+    </head>
+    <body style="background: url('../img/honeycomb5.png') no-repeat; background-size: cover; back">
+        <div class="container">
+        <div class="jumbotron">
+            <h1>L'essaim de la controverse</h1>
+            <div id="vis"></div>        
+        </div>
+            <div class="well">
+                <div id="content"></div>
+            </div>
+        </div>
+    <script src="../d3js/d3.v3.min.js"></script>
+    <script src="../js/jquery-2.0.3.min.js"></script>
+    <script src="../js/bootstrap-3.0.0.min.js"></script>
+
+    <script>
+        var width = $('.jumbotron').width (), height = 200;
+
+        var color = ["peru", "darkorange", "gold", "goldenrod", "chocolate", "sandybrown"];
+
+        var svg = d3.select("#vis").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("class", "bee");
+
+
+        var menu = [
+            {'text': 'Presentation', 'image': '../img/menu.png', 'link': 'presentation.html', 'x': '50', 'y': '20'},
+            {'text': 'Méthodologie', 'image': '../img/menu.png', 'link': 'methodology.html', 'x': '200', 'y': '20'},
+            {'text': 'Abeille sauvage et domestique', 'image': '../img/menu.png', 'link': 'sauvageetdomestique.html', 'x': '350', 'y': '20'},
+            {'text': 'Symbolisme des abeilles', 'image': '../img/menu.png', 'link': 'symbolisme.html', 'x': '500', 'y': '20'},
+            {'text': 'Science dans la controverse', 'image': '../img/menu.png', 'link': 'science1.html', 'x': '650', 'y': '20'},
+            {'text': 'Acteurs', 'image': '../img/gate.png', 'link': 'flowers3.html', 'x': '800', 'y': '20'}
+        ];
+
+        var div = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+
+        var menuitems = svg.selectAll('.menu')
+                .data(menu)
+                .enter()
+                .append("g")
+                .attr("class", "menuitem")
+                .style("opacity", 0)
+                .attr("id", function(d, i) {
+            return "menu" + i;
+        })
+                .attr("title", function(d) {
+            return d.text;
+        })
+                .on("click", clicked)
+                .append("path")
+                .attr("d", function(d, i) {
+            return hexagon( (i+1) * width/42, 80, width/12);
+        })
+                .attr("fill", function(d, i) {
+            return color[i];
+        })
+                .attr("class", "hexagon");
+
+        svg.selectAll(".menuitem")
+                .append("foreignObject")
+                .attr("width", width/8)
+                .attr("height", 80)
+                .attr("x", function(d, i) {
+            return  ((i+1) * width/42) - width/16;
+        })
+                .attr("y", 40)
+                .append("xhtml:div")
+                .attr("class", "menulabel")
+                .html(function(d) {
+            return d.text;
+        });
+
+        showMenu(menu.length - 1);
+
+        function showMenu(i) {
+            svg.selectAll('#menu' + i)
+                    .transition()
+                    .duration(1000)
+                    .style("opacity", 1)
+                    .attr("transform", "translate(" + menu[i].x + "," + menu[i].y + ")")
+                    .ease("linear")
+                    .duration(500)
+                    .delay(500)
+                    .each("end", function(d) {
+                if (i > 0) {
+                    showMenu(i - 1);
+                }
+            });
+
+        }
+
+
+        function clicked(d) {
+            menuitems.attr("class", function(e) {
+                if (d === e) {
+                    return "hexagon active";
+                } else {
+                    return "hexagon";
+                }
+            });
+            if (d.text == "Acteurs") {
+                window.location.href = d.link;
+            } else {
+                $("#content").load(d.link);
+            }
+        }
+
+        function hexagon(x, y, r) {
+            var x1 = x;
+            var y1 = y - r;
+            var x2 = x + (Math.cos(Math.PI / 6) * r);
+            var y2 = y - (Math.sin(Math.PI / 6) * r);
+            var x3 = x + (Math.cos(Math.PI / 6) * r);
+            var y3 = y + (Math.sin(Math.PI / 6) * r);
+            var x4 = x;
+            var y4 = y + r;
+            var x5 = x - (Math.cos(Math.PI / 6) * r);
+            var y5 = y + (Math.sin(Math.PI / 6) * r);
+            var x6 = x - (Math.cos(Math.PI / 6) * r);
+            var y6 = y - (Math.sin(Math.PI / 6) * r);
+
+            var path = "M" + x1 + " " + y1 + " L" + x2 + " " + y2 + " L" + x3 + " " + y3 + " L" + x4 + " " + y4 + " L" + x5 + " " + y5 + " L" + x6 + " " + y6 + "z";
+            return path;
+        }
+
+
+    </script>
+
+</body>
+</html>
