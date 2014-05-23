@@ -1,0 +1,39 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <div class="container">
+                <ul class="nav nav-tabs" style="">
+                    <li class="active"><a href="#" onclick="loadTabContent(0)" data-toggle="tab">Associations</a></li>
+                    <li><a href="#" onclick="loadTabContent(1)" data-toggle="tab">Avaaz</a></li>
+                    <li><a href="#" onclick="loadTabContent(2)" data-toggle="tab">Pro Natura</a></li>
+                    <li><a href="#" onclick="loadTabContent(3)" data-toggle="tab">Xerces Society</a></li>
+                    <li><a href="#" onclick="loadTabContent(4)" data-toggle="tab">Greenpeace</a></li>
+                    <li><a href="#" onclick="loadTabContent(5)" data-toggle="tab">WWF</a></li>
+                </ul>
+            <div class="tab-content"></div>
+            
+            
+        </div>
+        
+        <script>
+            
+            $(document).ready(function() {
+                loadTabContent(0);
+            });
+            
+            function loadTabContent(link) {
+                var links = ['associations.html','avaaz.html', 'pronatura.html','xerces.html','greenpeace.html','wwf.html']
+                $('.tab-content').empty().load(links[link]);
+            }
+            
+        </script>
+    </body>
+</html>

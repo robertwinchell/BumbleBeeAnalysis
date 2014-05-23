@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style>
+
+.hexagon {
+  stroke: #000;
+  stroke-width: .5px;
+}
+
+.active {
+   background: steelblue;
+    
+}
+
+.menu {
+    fill: yellow;
+}
+.exit {   
+  fill: lightsteelblue;   
+  stroke-width: 1px;      
+  stroke: lightsteelblue;           
+}
+
+
+
+div.tooltip {   
+  position: absolute;           
+  text-align: center;           
+  width: 200px;                  
+  height: 30px;                 
+  padding: 2px;             
+  font: 12px sans-serif;        
+  background: lightsteelblue;   
+  border: 0px;      
+  border-radius: 8px;           
+  cursor: url(../img/honeybee_opt.png), auto;
+  pointer-events: none;         
+}
+
+            a {
+                cursor: url(../img/honeybee_opt.png), auto;
+            }
+
+</style>
+    </head>
+<body>
+<script src="../d3js/d3.v3.min.js"></script>
+<script src="../d3js/d3.hexbin.v0.min.js"></script>
+<script>
+
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var centered;
+
+var randomX = d3.random.normal(width / 2, 80),
+    randomY = d3.random.normal(height / 2, 80),
+    points = d3.range(80).map(function(i) { return [randomX(), randomY()]; });
+
+    
+    points.sort();
+
+var menu = [
+    {'text':'about','link':'about.html'},
+    {'text':'Introduction & méthodologie','link':'about.html'},
+    {'text':'De quelle science parle-t-on?','link':'about.html'},
+    {'text':'Abeille sauvage et abeille domestique','link':'about.html'}
+];
+
+var color = d3.scale.linear()
+    .domain([0, 20])
+    .range(["orange", "peru", "goldenrod"]);
+
+var hexbin = d3.hexbin()
+    .size([width, height])
+    .radius(40);
+
+var x = d3.scale.identity()
+    .domain([0, width]);
+
+var y = d3.scale.linear()
+    .domain([0, height])
+    .range([height, 0]);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var div = d3.select("body").append("div")   
+    .attr("class", "tooltip")               
+    .style("opacity", 0);
+
+svg.append("clipPath")
+    .attr("id", "clip")
+  .append("rect")
+    .attr("class", "mesh")
+    .attr("width", width)
+    .attr("height", height);
+
+var hexpoints = hexbin(points);
+var numPoints = Math.ceil(hexpoints.length/4);
+svg.append("g")
+  .selectAll(".hexagon")
+    .data(hexpoints)
+  .enter().append("g")
+        .attr("class", function(d,i) {
+            if (parseInt(i/numPoints) == (i/numPoints))  {
+                return "hexagon menu";
+            } else {
+                return "hexagon";
+            }
+        })
+        .attr("id", function(d,i){ return i;})
+        .append("path")
+        .attr("style", function(d,i){ 
+            if (parseInt(i/numPoints) == (i/numPoints))  {
+                return "yellow";
+            } else {
+                return "fill: " + color(Math.floor(Math.random() * 20 )) + ";";
+            }
+        })
+        .attr("d", hexbin.hexagon())
+        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+var exit = svg.append("g")
+    .append("svg:a")
+        .attr("xlink:href", "flowers.html");
+
+
+    exit.append("rect")
+    .attr("class", "exit")
+    .attr("x", width - 200)
+    .attr("y", height - 50)
+    .attr("width", 100)
+    .attr("height", 50);
+    
+    exit.append("text")
+        .attr("x", width - 180)
+        .attr("y", height - 30)
+        .text("Sortie");
+
+var menuitems = svg.selectAll('.menu')
+        .attr("title", function(d,i) {
+                return menu[i]['text'];
+        })
+        .on("mouseover", mouseover)
+        .on("mouseout", mouseout)
+        .on("click", clicked)
+        .append("a")
+        .attr("xlink:href", function(d,i){return menu[i]['link'];}); 
+
+var textlabels = menuitems
+        .append("text")
+        .attr("x", function(d) {return d.x;})
+        .attr("y", function(d) {return d.y;})
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "8px")
+        .attr("fill", "red")
+        .attr("text-anchor", "middle")
+        .text(function (d,i){ 
+                if (i == 0) {
+                    return "A";
+                }
+                if (i == 1) {
+                    return "I et M";
+                }
+                if (i == 2) {
+                    return "P";
+                }
+                if (i == 3) {
+                    return "S et D";
+                }
+         });
+
+function mouseover(d) {
+            div.transition()        
+                .duration(200)      
+                .style("opacity", .9);      
+            div .html(d3.select(this).attr('title'))  
+                .style("left", (d3.event.pageX) + "px")     
+                .style("top", (d3.event.pageY - 28) + "px");    
+}
+
+function mouseout(d) {
+            div.transition()        
+                .duration(500)      
+                .style("opacity", 0);   
+}
+
+function clicked(d) {
+  var x, y, k;
+  if (d && centered !== d) {
+    x = d.x;
+    y = d.y;
+    k = 4;
+    centered = d;
+  } else {
+    x = width / 2;
+    y = height / 2;
+    k = 1;
+    centered = null;
+  }
+
+  svg.selectAll("g")
+      .classed("active", centered && function(d) { return d === centered; });
+
+  svg.transition()
+      .duration(750)
+      .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
+      .style("stroke-width", 1.5 / k + "px");
+
+    
+    div.transition()        
+       .duration(500)      
+       .style("opacity", 0);   
+
+}
+
+
+
+</script>
+
+    </body>
+</html>
